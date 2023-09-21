@@ -20,6 +20,18 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.get('/', async () => {
-  return { hello: 'world' }
-})
+Route
+  .group(() => {
+
+    Route.get('/', async () => {
+      return { hello: 'world' }
+    })
+
+    Route.get('/livros', 'LivrosController.index')
+
+
+
+  })
+  .prefix('api-intermediaria/ispocat/v1')
+
+
