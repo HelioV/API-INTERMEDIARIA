@@ -28,6 +28,7 @@ Route
     })
 
     Route.get('/livros', 'LivrosController.index')
+    Route.get('/livros/:id', 'LivrosController.show')
 
 
 

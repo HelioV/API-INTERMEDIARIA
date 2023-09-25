@@ -22,23 +22,31 @@ export default class LivroRepository {
 
   public async findAll(options: any = { page: null, perPage: null, search: null, searchBy: null, orderBy: null, orderByAscOrDesc: null }): Promise<any> {
     try {
+
       let result = Database
         .query()
         .from(this.nomeTabela).where(this.nomeTabela+'.typdoc','<>','a')
-        .leftJoin('publishers','publishers.ed_id','notices.ed1_id').select('notices.*','publishers.ed_name as editora1')
+        .leftJoin('publishers','publishers.ed_id','notices.ed1_id').select(
+          'notices.n_contenu as descricao','notices.n_resume as descricao2',
+          'notices.n_gen as nota_geral','notices.tit1 as titulo','notices.tit2 as titulo2',
+          'notices.tit3 as titulo3','notices.tit4 as titulo4',
+          'notices.notice_id as id_livro',
+          Database.raw("DATE_FORMAT(notices.create_date, '%d/%m/%Y %H:%i:%s') as created_at"),
+          Database.raw("DATE_FORMAT(notices.update_date, '%d/%m/%Y %H:%i:%s') as data_atualizacao"),
+          'publishers.ed_name as editora','publishers.ed_web as cor')
         .leftJoin('notices_categories','notices_categories.notcateg_notice','notices.notice_id')
         .leftJoin('categories','notices_categories.num_noeud','categories.num_noeud').select('categories.libelle_categorie as categoria')
-        //.leftJoin('responsability','responsability.responsability_notice','notices.notice_id').select('responsability.responsability_author as autores')
+
         .select(
           Database
           .from('responsability')
-          .select('authors.author_rejete')
+          .select(Database.raw('CONCAT(authors.author_rejete," ", authors.author_name)'))
+
           .whereColumn('notices_categories.num_noeud','categories.num_noeud')
           .leftJoin('authors','authors.author_id','responsability.responsability_author')
           .limit(1)
           .as('autor') // 👈 This is important
         )
-
         .clone()
 
 
@@ -63,53 +71,39 @@ export default class LivroRepository {
   public async findById(id: number): Promise<any> {
 
     try {
-      const query = await Database
+      let result = Database
         .query()
-        .from('livros')
-        .where('livros.id', id).where('livros.deleted', false).where('livros.activated', true)
-        .innerJoin('autors','autors.id','livros.autor_id')
-        .select('autors.nome_completo as autor')
-        .innerJoin('categoria_livros','categoria_livros.id','livros.categoria_livro_id')
-        .select('categoria_livros.nome as categoria','categoria_livros.cor')
-        .select('livros.id','livros.titulo','livros.capa','livros.descricao','livros.volume','livros.total_pagina','livros.lancamento',
-        'livros.gostos','livros.favoritos','livros.visualizacao','livros.categoria_livro_id as categoria_id',
-        Database.raw("DATE_FORMAT(livros.updated_at, '%d/%m/%Y %H:%i:%s') as data")
-        ,'livros.url')
-        .first()
-      return query;
-    } catch (e) {
-      console.log(e)
-      throw new NotFoundException()
-    }
-  }
+        .from(this.nomeTabela).where(this.nomeTabela+'.typdoc','<>','a')
+        .where('notices.notice_id',id)
+        .leftJoin('publishers','publishers.ed_id','notices.ed1_id').select(
+          'notices.n_contenu as descricao','notices.n_resume as descricao2',
+          'notices.n_gen as nota_geral','notices.tit1 as titulo','notices.tit2 as titulo2',
+          'notices.tit3 as titulo3','notices.tit4 as titulo4',
+          'notices.notice_id as id_livro',
+          Database.raw("DATE_FORMAT(notices.create_date, '%d/%m/%Y %H:%i:%s') as created_at"),
+          Database.raw("DATE_FORMAT(notices.update_date, '%d/%m/%Y %H:%i:%s') as data_atualizacao"),
+          'publishers.ed_name as editora','publishers.ed_web as cor')
+        .leftJoin('notices_categories','notices_categories.notcateg_notice','notices.notice_id')
+        .leftJoin('categories','notices_categories.num_noeud','categories.num_noeud').select('categories.libelle_categorie as categoria')
 
-  public async livrosRelacionados(idcategoria: string,idlivro:string): Promise<any> {
+        .select(
+          Database
+          .from('responsability')
+          .select(Database.raw('CONCAT(authors.author_rejete," ", authors.author_name)'))
 
-    try {
-      const query = await Database
-        .query()
-        .from('livros')
-        .where('livros.categoria_livro_id', idcategoria).where('livros.deleted', false).where('livros.activated', true)
-        .andWhere('livros.id','<>',idlivro)
-        .innerJoin('autors','autors.id','livros.autor_id')
-        .select('autors.nome_completo as autor')
-        .innerJoin('categoria_livros','categoria_livros.id','livros.categoria_livro_id')
-        .select('categoria_livros.nome as categoria','categoria_livros.cor')
-        .select('livros.id','livros.titulo','livros.capa','livros.descricao','livros.volume','livros.total_pagina','livros.lancamento',
-        'livros.gostos','livros.favoritos','livros.visualizacao',
-        Database.raw("DATE_FORMAT(livros.updated_at, '%d/%m/%Y %H:%i:%s') as data")
+          .whereColumn('notices_categories.num_noeud','categories.num_noeud')
+          .leftJoin('authors','authors.author_id','responsability.responsability_author')
+          .limit(1)
+          .as('autor') // 👈 This is important
         )
-        .limit(6)
 
-      return query;
+        .clone()
+      return result;
     } catch (e) {
       console.log(e)
       throw new NotFoundException()
     }
   }
-
-
-
 
 
   public async Biblioteca(options: any = { page: null, perPage: null, search: null, searchBy: null, orderBy: null, orderByAscOrDesc: null,departamento:null,curso:null,disciplina:null }) {
