@@ -20,7 +20,7 @@ export default class LivroRepository {
    * @returns { Object } modelResponse
    */
 
-  public async findAll(options: any = { page: null, perPage: null, search: null, searchBy: null, orderBy: null, orderByAscOrDesc: null }): Promise<any> {
+  public async findAll(options: any = { page: null,autor:null,publicacao:null,titulo:null,editora:null,descricao:null, perPage: null, search: null, searchBy: null, orderBy: null, orderByAscOrDesc: null }): Promise<any> {
     try {
 
       let result = Database
@@ -37,21 +37,45 @@ export default class LivroRepository {
         .leftJoin('notices_categories','notices_categories.notcateg_notice','notices.notice_id')
         .leftJoin('categories','notices_categories.num_noeud','categories.num_noeud').select('categories.libelle_categorie as categoria')
 
-        .select(
-          Database
-          .from('responsability')
-          .select(Database.raw('CONCAT(authors.author_rejete," ", authors.author_name)'))
+        if(options.publicacao!=null)
+        {
+          result.where(Database.raw('YEAR(notices.create_date)'),options.publicacao)
+        }
+        if(options.autor!=null)
+        {
+           result.innerJoin('responsability','notices.notice_id','responsability.responsability_notice')
+                 .innerJoin('authors','authors.author_id','responsability.responsability_author')
+                 .where('authors.author_rejete','like',`%${options.autor}%`)
+        }else {
+          result.select(
+            Database
+            .from('responsability')
+            .select(Database.raw('CONCAT(authors.author_rejete," ", authors.author_name)'))
 
-          .whereColumn('notices_categories.num_noeud','categories.num_noeud')
-          .leftJoin('authors','authors.author_id','responsability.responsability_author')
-          .limit(1)
-          .as('autor') // 👈 This is important
-        )
-        .clone()
+            .whereColumn('notices_categories.num_noeud','categories.num_noeud')
+            .leftJoin('authors','authors.author_id','responsability.responsability_author')
+            .limit(1)
+            .as('autor') // 👈 This is important
+          )
+          .clone()
+        }
+
 
 
         if(options.search){
           result= result.where(options.searchBy,'like',`%${options.search}%`).clone()
+        }
+
+        if(options.titulo!=null){
+          result= result.where('notices.tit1','like',`%${options.titulo}%`).clone()
+        }
+
+        if(options.descricao!=null){
+          result= result.where('notices.n_contenu','like',`%${options.descricao}%`).clone()
+        }
+
+        if(options.editora!=null){
+          result= result.where('publishers.ed_name','like',`%${options.editora}%`).clone()
         }
 
         if(options.orderBy){

@@ -15,6 +15,11 @@ export default class LivrosController {
       page: request.input("page") || null,
       perPage: request.input("perPage") || null,
       search: request.input("search") || null,
+      titulo: request.input("titulo") || null,
+      editora: request.input("editora") || null,
+      descricao: request.input("descricao") || null,
+      autor: request.input("autor") || null,
+      publicacao: request.input("publicacao") || null,
       searchBy: request.input("searchBy") || null,
       orderBy: request.input("orderBy") || null,
       orderByAscOrDesc: request.input("orderByAscOrDesc") || 'asc'
