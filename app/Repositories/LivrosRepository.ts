@@ -25,7 +25,7 @@ export default class LivroRepository {
 
       let result = Database
         .query()
-        .from(this.nomeTabela).where(this.nomeTabela+'.typdoc','<>','a')
+        .from(this.nomeTabela) //.where(this.nomeTabela+'.typdoc','<>','a')
         .leftJoin('publishers','publishers.ed_id','notices.ed1_id').select(
           'notices.n_contenu as descricao','notices.n_resume as descricao2',
           'notices.n_gen as nota_geral','notices.tit1 as titulo','notices.tit2 as titulo2',
@@ -37,11 +37,11 @@ export default class LivroRepository {
         .leftJoin('notices_categories','notices_categories.notcateg_notice','notices.notice_id')
         .leftJoin('categories','notices_categories.num_noeud','categories.num_noeud').select('categories.libelle_categorie as categoria')
 
-        if(options.publicacao!=null)
+        if(options?.publicacao)
         {
           result.where(Database.raw('YEAR(notices.create_date)'),options.publicacao)
         }
-        if(options.autor!=null)
+        if(options?.autor)
         {
            result.innerJoin('responsability','notices.notice_id','responsability.responsability_notice')
                  .innerJoin('authors','authors.author_id','responsability.responsability_author')
@@ -62,23 +62,23 @@ export default class LivroRepository {
 
 
 
-        if(options.search){
+        if(options?.search){
           result= result.where(options.searchBy,'like',`%${options.search}%`).clone()
         }
 
-        if(options.titulo!=null){
+        if(options?.titulo){
           result= result.where('notices.tit1','like',`%${options.titulo}%`).clone()
         }
 
-        if(options.descricao!=null){
+        if(options?.descricao){
           result= result.where('notices.n_contenu','like',`%${options.descricao}%`).clone()
         }
 
-        if(options.editora!=null){
+        if(options?.editora){
           result= result.where('publishers.ed_name','like',`%${options.editora}%`).clone()
         }
 
-        if(options.orderBy){
+        if(options?.orderBy){
           result= result.orderBy(options.orderBy, options.orderByAscOrDesc).clone()
         }
 
@@ -97,7 +97,7 @@ export default class LivroRepository {
     try {
       let result = Database
         .query()
-        .from(this.nomeTabela).where(this.nomeTabela+'.typdoc','<>','a')
+        .from(this.nomeTabela) //.where(this.nomeTabela+'.typdoc','<>','a')
         .where('notices.notice_id',id)
         .leftJoin('publishers','publishers.ed_id','notices.ed1_id').select(
           'notices.n_contenu as descricao','notices.n_resume as descricao2',
