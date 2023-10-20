@@ -62,23 +62,24 @@ export default class LivroRepository {
 
 
 
-        if(options?.search){
+        if(options.search && options.search!="-1" && options.search!="null"){
           result= result.where(options.searchBy,'like',`%${options.search}%`).clone()
         }
 
-        if(options?.titulo){
+        if(options.titulo && options.titulo!="-1" && options.titulo!="null"){
+
           result= result.where('notices.tit1','like',`%${options.titulo}%`).clone()
         }
 
-        if(options?.descricao){
+        if(options.descricao && options.descricao!="-1" && options.descricao!="null"){
           result= result.where('notices.n_contenu','like',`%${options.descricao}%`).clone()
         }
 
-        if(options?.editora){
+        if(options.editora && options.editora!="-1" && options.editora!="null"){
           result= result.where('publishers.ed_name','like',`%${options.editora}%`).clone()
         }
 
-        if(options?.orderBy){
+        if(options.orderBy && options.orderBy!="-1" && options.orderBy!="null"){
           result= result.orderBy(options.orderBy, options.orderByAscOrDesc).clone()
         }
 
